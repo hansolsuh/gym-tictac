@@ -1,44 +1,42 @@
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
+import numpy as np
 
 class TicTacEnv(gym.Env):
 	metadata = {'render.modes': ['human']}
 
 
 	def __init__(self):
-		self.state = []
-		for i in range(3):
-			self.state += [[]]
-			for j in range(3):
-				self.state[i] += ["-"]
+		self.state = np.zeros(shape=(3,3),dtype=np.int8)
 		self.counter = 0
 		self.done = 0
 		self.add = [0, 0]
 		self.reward = 0
+		self.action_space = spaces.Discrete(9)
 
 	def check(self):
 
 		if(self.counter<5):
 			return 0
 		for i in range(3):
-			if(self.state[i][0] != "-" and self.state[i][1] == self.state[i][0] and self.state[i][1] == self.state[i][2]):
-				if(self.state[i][0] == "o"):
+			if(self.state[i][0] != 0 and self.state[i][1] == self.state[i][0] and self.state[i][1] == self.state[i][2]):
+				if(self.state[i][0] == 1):
 					return 1
 				else:
 					return 2
-			if(self.state[0][i] != "-" and self.state[1][i] == self.state[0][i] and self.state[1][i] == self.state[2][i]):
-				if(self.state[0][i] == "o"):
+			if(self.state[0][i] != 0 and self.state[1][i] == self.state[0][i] and self.state[1][i] == self.state[2][i]):
+				if(self.state[0][i] == 1):
 					return 1
 				else:
 					return 2
-		if(self.state[0][0] != "-" and self.state[1][1] == self.state[0][0] and self.state[1][1] == self.state[2][2]):
-			if(self.state[0][0] == "o"):
+		if(self.state[0][0] != 0 and self.state[1][1] == self.state[0][0] and self.state[1][1] == self.state[2][2]):
+			if(self.state[0][0] == 1):
 				return 1
 			else:
 				return 2
-		if(self.state[0][2] != "-" and self.state[0][2] == self.state[1][1] and self.state[1][1] == self.state[2][0]):
-			if(self.state[1][1] == "o"):
+		if(self.state[0][2] != 0 and self.state[0][2] == self.state[1][1] and self.state[1][1] == self.state[2][0]):
+			if(self.state[1][1] == 1):
 				return 1
 			else:
 				return 2
@@ -47,14 +45,14 @@ class TicTacEnv(gym.Env):
 		if self.done == 1:
 			print("Game Over")
 			return [self.state, self.reward, self.done, self.add]
-		elif self.state[int(target/3)][target%3] != "-":
+		elif self.state[int(target/3)][target%3] != 0:
 			print("Invalid Step")
 			return [self.state, self.reward, self.done, self.add]
 		else:
 			if(self.counter%2 == 0):
-				self.state[int(target/3)][target%3] = "o"
+				self.state[int(target/3)][target%3] = 1
 			else:
-				self.state[int(target/3)][target%3] = "x"
+				self.state[int(target/3)][target%3] = 2 
 			self.counter += 1
 			if(self.counter == 9):
 				self.done = 1;
@@ -68,13 +66,12 @@ class TicTacEnv(gym.Env):
 				self.reward = 100
 			else:
 				self.reward = -100
-
-		return [self.state, self.reward, self.done, self.add]
+		return [self.state, self.reward, self.done, {"add:" : self.add}] #"info not getting used.. whatever is fine?
 
 	def reset(self):
 		for i in range(3):
 			for j in range(3):
-				self.state[i][j] = "-"
+				self.state[i][j] = 0
 		self.counter = 0
 		self.done = 0
 		self.add = [0, 0]
@@ -84,5 +81,12 @@ class TicTacEnv(gym.Env):
 	def render(self):
 		for i in range(3):
 			for j in range(3):
-				print(self.state[i][j], end = " ")
+				if self.state[i][j] == 0:
+					print('-', end = " ")
+				elif self.state[i][j] == 1:
+					print('O', end = " ")
+				else:
+					print('X', end = " ")
 			print("")
+		print("-----------------------")	
+
